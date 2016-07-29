@@ -49,16 +49,35 @@
 
   <script type="text/javascript">
 
-    // Capture the form inputs 
+  	// Grab the URL of the website
+		var currentURL = window.location.origin;
+
+  	$(document).ready(function() {
+
+  		// Get data from database
+			$.get(currentURL + "/data", function(data) {
+				
+				$tbody = $('tbody');
+
+				for (var i in data) {
+					var $ASIN = $('<td>').text(data[i].ASIN);
+					var $Title = $('<td>').text(data[i].Title);
+					var $MPN = $('<td>').text(data[i].MPN);
+					var $Price = $('<td>').text(data[i].Price);
+					var $tr = $('<tr>').append($ASIN).append($Title).append($MPN).append($Price);
+					$tbody.append($tr);
+				}
+			
+			});
+
+  	});
+
 		$("#submit").on("click", function() {
 
 			// Get user input
 			var search = encodeURI($("#input").val().trim());
 
-			// Grab the URL of the website
-			var currentURL = window.location.origin;
-
-			// AJAX post the data to the friends API. 
+			// Get data from product search
 			$.get(currentURL + "/search/" + search, function(data) {
 
 				// Remove old div
@@ -75,10 +94,10 @@
 				}
 
 				// Create new button and div
-				var $but = $('<button>').attr('type','button').addClass('btn btn-default').text('Add to DB');
+				var $but = $('<button>').attr('type','button').attr('id','add').addClass('btn btn-default').text('Add to DB');
 				var $div = $('<div>').attr('id','show').append($well).append($but);
 
-				// Save well to local storage
+				// Save data to local storage
 				localStorage.setItem('search', JSON.stringify(data));
 				
 				// Add well to page
@@ -89,6 +108,32 @@
 			return false;
 		});
 
+		// Capture the form inputs 
+		$(document).on("click", "#add", function() {
+
+			// Get data fro, local storage
+			var userData = JSON.parse(localStorage.getItem('search'));
+
+			// AJAX post the data to the friends API. 
+			$.post(currentURL + "/add", userData, function(data) {
+
+				if (data.code === "ER_DUP_ENTRY") {
+					alert('Cannot add product twice');
+				} else {
+
+					var $ASIN = $('<td>').text(userData.ASIN);
+					var $Title = $('<td>').text(userData.Title);
+					var $MPN = $('<td>').text(userData.MPN);
+					var $Price = $('<td>').text(userData.Price);
+					var $tr = $('<tr>').append($ASIN).append($Title).append($MPN).append($Price);
+					$('tbody').prepend($tr);
+
+				}				
+				
+			});
+
+			return false;
+		});
 
   </script>
 

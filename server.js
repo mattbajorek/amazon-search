@@ -3,6 +3,7 @@ var express = require('express');
 var bodyParser = require('body-parser');
 var path = require('path');
 var amazon = require('amazon-product-api');
+var mysql = require('mysql');
 var config = require('./config');
 
 // Sets up the Express App
@@ -15,6 +16,19 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.text());
 app.use(bodyParser.json({type:'application/vnd.api+json'}));
 
+// Connect to database
+var connection = mysql.createConnection({
+  host: "localhost",
+  port: 3306,
+  user: "root", //Your username
+  password: "", //Your password
+  database: "AmazonDB"
+});
+
+connection.connect(function(err) {
+  if (err) throw err;
+});
+
 // Create client
 var client = amazon.createClient({
   awsId: config.keys.awsId,
@@ -25,6 +39,20 @@ var client = amazon.createClient({
 // Router for main html page
 app.get('/', function(req, res){
 	res.sendFile(path.join(__dirname, './index.html'));
+})
+
+// Router for main html page
+app.get('/data', function(req, res){
+
+	var query = 'SELECT * FROM Products';
+	connection.query(query, function(error, response) {
+    if (error) {
+    	res.send(error);
+    } else {
+    	res.json(response);
+    }
+  });
+
 })
 
 // Router for ajax get search
@@ -55,7 +83,15 @@ app.get('/search/:search', function(req, res){
 // Router for ajax post add
 app.post('/add', function(req, res){
 	
-	console.log(req.body);
+	var query = 'INSERT INTO Products (ASIN,Title,MPN,Price) VALUES (?,?,?,?)';
+	var params = [req.body.ASIN, req.body.Title, req.body.MPN, req.body.Price];
+	connection.query(query, params, function(error, response) {
+    if (error) {
+    	res.send(error);
+    } else {
+    	res.send(response);
+    }
+  });
 
 })
 
