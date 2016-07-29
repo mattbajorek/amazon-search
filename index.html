@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Amazon Search</title>
+
+	<!-- Latest compiled and minified CSS & JS -->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+	<script src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+</head>
+<body>
+
+	<div class="container">
+
+		<div class="row">
+
+	    <div class="col-lg-6">
+	      <h1>Search DB</h1>
+	      <table class="table table-bordered">
+			    <thead>
+			      <tr>
+			        <th>ASIN</th>
+			        <th>Title</th>
+			        <th>MPN</th>
+			        <th>Price</th>
+			      </tr>
+			    </thead>
+			    <tbody>
+			    </tbody>
+			  </table>
+	    </div>
+
+	    <div class="col-lg-6" id="secondCol">
+	      <h1>Search Amazon</h1>
+	      <div class="input-group">
+		      <input type="text" class="form-control" placeholder="Search for..." id="input">
+		      <span class="input-group-btn">
+		        <button class="btn btn-default" type="button" id="submit">Submit</button>
+		      </span>
+		    </div>
+		    <br>
+	    </div>
+
+	  </div>
+
+	</div>
+
+  <script type="text/javascript">
+
+    // Capture the form inputs 
+		$("#submit").on("click", function() {
+
+			// Get user input
+			var search = encodeURI($("#input").val().trim());
+
+			// Grab the URL of the website
+			var currentURL = window.location.origin;
+
+			// AJAX post the data to the friends API. 
+			$.get(currentURL + "/search/" + search, function(data) {
+
+				// Remove old div
+				$('#show').remove();
+
+				// Create new well
+				var $well = $('<div>').attr('id','show').addClass('well');
+
+				// Add data to well
+				var dataCol = ['ASIN','Title','MPN','Price'];
+				for (var i in dataCol) {
+					var $p = $('<p>').text(dataCol[i] + ': ' + data[dataCol[i]]);
+					$well.append($p);
+				}
+
+				// Create new button and div
+				var $but = $('<button>').attr('type','button').addClass('btn btn-default').text('Add to DB');
+				var $div = $('<div>').attr('id','show').append($well).append($but);
+
+				// Save well to local storage
+				localStorage.setItem('search', JSON.stringify(data));
+				
+				// Add well to page
+				$('#secondCol').append($div);
+				
+			});
+
+			return false;
+		});
+
+
+  </script>
+
+</body>
+</html>
